@@ -13,6 +13,35 @@ export class ProjectController {
     }
   };
   static getAllProjects = async (req: Request, res: Response) => {
-    res.send("Todos los Proyectos");
+    try {
+      const projects = await Project.find({});
+      res.status(201).json({
+        status: "success",
+        cantidad: projects.length,
+        projects,
+      });
+    } catch (error) {
+      console.error(error);
+      console.log(error);
+    }
+  };
+  static getProjectById = async (req: Request, res: Response) => {
+    const { id } = req.params;
+
+    try {
+      const project = await Project.findById(id);
+
+      if (!project) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+
+      res.status(200).json({
+        status: "success",
+        project,
+      });
+    } catch (error) {
+      console.error(error);
+      console.log(error);
+    }
   };
 }
