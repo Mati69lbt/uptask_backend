@@ -4,7 +4,6 @@ import Project from "../models/Projects";
 export class ProjectController {
   static createProject = async (req: Request, res: Response) => {
     const project = new Project(req.body);
-
     try {
       await project.save();
       res.status(201).json({ message: "Project Created Successfully" });
