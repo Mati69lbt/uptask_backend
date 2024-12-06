@@ -2,12 +2,12 @@ import { Router } from "express";
 import { AuthController } from "../controllers/AuthController";
 import { body, param } from "express-validator";
 import { handleInputErrors } from "../middleware/validation";
+import { authenticate } from "../middleware/auth";
 
 const router = Router();
 
 router.post(
   "/create-account",
-
   body("name").notEmpty().withMessage("El nombre no puede ir vacío"),
   body("email").isEmail().withMessage("Debes ingresar un email válido"),
   body("password")
@@ -20,7 +20,6 @@ router.post(
     return true;
   }),
   handleInputErrors,
-
   AuthController.createAccount
 );
 
@@ -75,5 +74,7 @@ router.post(
   handleInputErrors,
   AuthController.updatePasswordWithToken
 );
+
+router.get("/user", authenticate, AuthController.user);
 
 export default router;

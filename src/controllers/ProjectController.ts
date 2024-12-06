@@ -4,6 +4,10 @@ import Project from "../models/Projects";
 export class ProjectController {
   static createProject = async (req: Request, res: Response) => {
     const project = new Project(req.body);
+
+    // Asignar al creador del proyecto
+    project.manager = req.user.id;
+
     try {
       await project.save();
       res.status(201).json({ message: "Project Created Successfully" });
@@ -14,7 +18,9 @@ export class ProjectController {
   };
   static getAllProjects = async (req: Request, res: Response) => {
     try {
-      const projects = await Project.find({});
+      const projects = await Project.find({
+        $or: [{ manager: { $in: req.user.id } }],
+      });
       res.status(201).json({
         status: "success",
         cantidad: projects.length,
@@ -30,9 +36,16 @@ export class ProjectController {
 
     try {
       const project = await Project.findById(id).populate("tasks");
+      console.log(project);
+      console.log(req.user.id);
 
       if (!project) {
         return res.status(404).json({ message: "Project not found" });
+      }
+
+      if (project.manager.toString() !== req.user.id.toString()) {
+        const error = new Error("Acción no válida");
+        return res.status(403).json({ error: error.message });
       }
 
       res.status(200).json({
@@ -41,7 +54,6 @@ export class ProjectController {
         project,
       });
     } catch (error) {
-      console.error(error);
       console.log(error);
     }
   };
@@ -53,6 +65,12 @@ export class ProjectController {
       if (!project) {
         return res.status(404).json({ message: "Project not found" });
       }
+
+      if (project.manager.toString() !== req.user.id.toString()) {
+        const error = new Error("Solo el manager puede actualizar el Proyecto");
+        return res.status(403).json({ error: error.message });
+      }
+
       project.projectName = req.body.projectName;
       project.clientName = req.body.clientName;
       project.description = req.body.description;
@@ -76,6 +94,11 @@ export class ProjectController {
 
       if (!project) {
         return res.status(404).json({ message: "Project not found" });
+      }
+
+      if (project.manager.toString() !== req.user.id.toString()) {
+        const error = new Error("Solo el manager puede eliminar el Proyecto");
+        return res.status(403).json({ error: error.message });
       }
 
       await project.deleteOne();
