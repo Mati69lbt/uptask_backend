@@ -4,8 +4,13 @@ import { ProjectController } from "../controllers/ProjectController";
 import { handleInputErrors } from "../middleware/validation";
 import { TaskController } from "../controllers/TaskController";
 import { validateProjectExist } from "../middleware/project";
-import { taskBelongsToProject, taskExist } from "../middleware/task";
+import {
+  hasAuthorization,
+  taskBelongsToProject,
+  taskExist,
+} from "../middleware/task";
 import { authenticate } from "../middleware/auth";
+import { TeamMemberController } from "../controllers/TeamController";
 
 const router = Router();
 
@@ -64,6 +69,7 @@ router.param("projectId", validateProjectExist);
 
 router.post(
   "/:projectId/tasks",
+  hasAuthorization,
   body("name")
     .notEmpty()
     .withMessage("El campo Nombre de la Tarea del Proyecto es Obligatorio"),
@@ -90,6 +96,7 @@ router.get(
 
 router.put(
   "/:projectId/tasks/:taskId",
+  hasAuthorization,
   param("taskId").isMongoId().withMessage("ID no válido"),
   body("name")
     .notEmpty()
@@ -105,6 +112,7 @@ router.put(
 
 router.delete(
   "/:projectId/tasks/:taskId",
+  hasAuthorization,
   param("taskId").isMongoId().withMessage("ID no válido"),
   handleInputErrors,
   TaskController.deleteTask
@@ -115,6 +123,30 @@ router.post(
   body("status").notEmpty().withMessage("El campo Estado es Obligatorio"),
   handleInputErrors,
   TaskController.updateStatus
+);
+
+// Rutas para Teams
+router.post(
+  "/:projectId/team/find",
+  body("email").isEmail().toLowerCase().withMessage("Email no válido"),
+  handleInputErrors,
+  TeamMemberController.findMemberByEmail
+);
+
+router.get("/:projectId/team", TeamMemberController.getProjectTeam);
+
+router.post(
+  "/:projectId/team",
+  body("id").isMongoId().withMessage("ID no válido"),
+  handleInputErrors,
+  TeamMemberController.addMemberById
+);
+
+router.delete(
+  "/:projectId/team/:userId",
+  param("userId").isMongoId().withMessage("ID no válido"),
+  handleInputErrors,
+  TeamMemberController.removeMemberById
 );
 
 export default router;

@@ -1,7 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import Task, { ITask } from "../models/Task";
 
-
 declare global {
   namespace Express {
     interface Request {
@@ -37,16 +36,28 @@ export async function taskBelongsToProject(
   next: NextFunction
 ) {
   try {
-      if (req.task.project._id.toString() !== req.project.id.toString()) {
-        return res
-          .status(403)
-          .json({ message: "You don't have permission to access this task" });
-      }
-       next();
+    if (req.task.project._id.toString() !== req.project.id.toString()) {
+      return res
+        .status(403)
+        .json({ message: "You don't have permission to access this task" });
+    }
+    next();
   } catch (error) {
-       res.status(500).json({
-         status: "Error",
-         error: "Hubo un Error",
-       });
+    res.status(500).json({
+      status: "Error",
+      error: "Hubo un Error",
+    });
   }
+}
+
+export async function hasAuthorization(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  if (req.user.id.toString() !== req.project.manager.toString()) {
+    const error = new Error("Acción no válida");
+    return res.status(400).json({ error: error.message });
+  }
+  next();
 }
