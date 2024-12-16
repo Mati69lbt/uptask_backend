@@ -91,7 +91,7 @@ export class AuthController {
 
       // Revisar password
       const isValidPassword = await checkPassword(password, user.password);
-      console.log(isValidPassword);
+      
 
       if (!isValidPassword) {
         const error = new Error("Contraseña incorrecta");

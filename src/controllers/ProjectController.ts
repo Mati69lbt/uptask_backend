@@ -38,9 +38,7 @@ export class ProjectController {
     const { id } = req.params;
 
     try {
-      const project = await Project.findById(id).populate("tasks");
-      console.log(project);
-      console.log(req.user.id);
+      const project = await Project.findById(id).populate("tasks");      
 
       if (!project) {
         return res.status(404).json({ message: "Project not found" });
