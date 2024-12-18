@@ -91,7 +91,6 @@ export class AuthController {
 
       // Revisar password
       const isValidPassword = await checkPassword(password, user.password);
-      
 
       if (!isValidPassword) {
         const error = new Error("Contraseña incorrecta");
@@ -213,5 +212,57 @@ export class AuthController {
 
   static user = async (req: Request, res: Response) => {
     return res.json(req.user);
+  };
+
+  static updateProfile = async (req: Request, res: Response) => {
+    const { name, email } = req.body;
+
+    const userExist = await User.findOne({ email });
+    if (userExist && userExist.id.toString() !== req.user.id.toString()) {
+      const error = new Error("El correo ya esta registrado");
+      return res.status(409).json({ error: error.message });
+    }
+
+    req.user.name = name;
+    req.user.email = email;
+    try {
+      await req.user.save();
+      res.send("Perfil actualizado exitosamente");
+    } catch (error) {
+      res.status(500).send("Hubo un error");
+    }
+  };
+  static updateCurrentUserPassword = async (req: Request, res: Response) => {
+    const { current_password, password } = req.body;
+    const user = await User.findById(req.user.id);
+    const isValidPassword = await checkPassword(
+      current_password,
+      user.password
+    );
+    if (!isValidPassword) {
+      const error = new Error("Contraseña actual no válida");
+      return res.status(401).json({ error: error.message });
+    }
+
+    try {
+      user.password = await hashPassword(password);
+      await user.save();
+      res.send("Contraseña actualizada exitosamente");
+    } catch (error) {
+      res.status(500).send("Hubo un error");
+    }
+  };
+
+  static checkPassword = async (req: Request, res: Response) => {
+    const { password } = req.body;
+
+    const user = await User.findById(req.user.id);
+    const isValidPassword = await checkPassword(password, user.password);
+
+    if (!isValidPassword) {
+      const error = new Error("Contraseña actual no válida");
+      return res.status(401).json({ error: error.message });
+    }
+    res.send("Contraseña válida");
   };
 }
