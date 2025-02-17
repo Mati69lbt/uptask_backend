@@ -14,4 +14,3 @@ export const connectDB = async () => {
   }
 };
 
-// video 001 creando el modelo
