@@ -59,5 +59,6 @@ npm run dev
 - Funciona en **modo local** usando MongoDB Compass.
 
 
-### 📄 Más información: [Visita mi sitio web](https://mdelgado.netlify.app)
+### 📄 Más información: <a href="https://mdelgado.netlify.app" target="_blank">Visita mi sitio web</a>
+
 
